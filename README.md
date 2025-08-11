@@ -32,4 +32,4 @@ No database. No installs. Runs 100% in your browser — perfect for GitHub Pages
 
 ---
 ## Link to Play
-- **https://armansoor.github.io/Color-Thief/
+- https://armansoor.github.io/Color-Thief/

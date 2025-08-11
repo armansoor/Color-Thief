@@ -31,3 +31,5 @@ No database. No installs. Runs 100% in your browser — perfect for GitHub Pages
 - **Restart Button**: Start a new game anytime.
 
 ---
+## Link to Play
+- **https://armansoor.github.io/Color-Thief/

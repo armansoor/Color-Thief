@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Color Thief — Deluxe</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root">
+    <header>
+      <h1>🎨 Color Thief — Deluxe</h1>
+      <div id="top-controls">
+        <button id="btn-start">Start</button>
+        <button id="btn-continue">Continue</button>
+        <button id="btn-reset">Reset Progress</button>
+        <label class="small"><input type="checkbox" id="mute"> Mute</label>
+      </div>
+    </header>
+
+    <main>
+      <canvas id="canvas"></canvas>
+      <aside id="hud">
+        <div class="hud-item">Level: <span id="level">1</span></div>
+        <div class="hud-item">Score: <span id="score">0</span></div>
+        <div class="hud-item">Target: <div id="targetSwatch" class="swatch"></div></div>
+        <div class="hud-item">You: <div id="playerSwatch" class="swatch"></div></div>
+        <div class="hud-item">Inventory: <div id="inventory"></div></div>
+        <div class="hud-item small" id="tip">Tip: Steal colors from orbs and combine to match the target.</div>
+      </aside>
+    </main>
+
+    <footer>
+      <small>Use arrow keys or WASD to move. Click or Space to shoot a collector. Game state saved in browser.</small>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

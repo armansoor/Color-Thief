@@ -31,10 +31,3 @@ No database. No installs. Runs 100% in your browser — perfect for GitHub Pages
 - **Restart Button**: Start a new game anytime.
 
 ---
-
-## 🛠 Installation (for GitHub Pages)
-1. **Download** or **clone** this repository.
-2. Upload all files (`index.html`, `style.css`, `script.js`, `README.md`) to your GitHub repository.
-3. Go to **Settings** → **Pages**.
-4. Under **Source**, select `main branch / root` and click **Save**.
-5. Wait a few seconds — your game will be live at:

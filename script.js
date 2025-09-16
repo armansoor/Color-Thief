@@ -342,8 +342,6 @@
   // ---------- Main loop ----------
   function loop(ts){
     if(!lastTs) lastTs = ts; const dt = Math.min(0.06, (ts - lastTs)/1000); lastTs = ts;
-    // update collectors decay
-    for(let i=collectors.length-1;i>=0;i--){ collectors[i].life -= dt; if(collectors[i].life <= 0) collectors.splice(i,1); }
 
     update(dt);
     draw();

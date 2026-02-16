@@ -1,40 +1,61 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Color Thief — Deluxe</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chroma Quest: The Void Painter</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="root">
-    <header>
-      <h1>🎨 Color Thief — Deluxe</h1>
-      <div id="top-controls">
-        <button id="btn-start">Start</button>
-        <button id="btn-continue">Continue</button>
-        <button id="btn-reset">Reset Progress</button>
-        <label class="small"><input type="checkbox" id="mute"> Mute</label>
-      </div>
-    </header>
+    <div id="game-container">
+        <!-- Main Game Canvas -->
+        <canvas id="game-canvas"></canvas>
 
-    <main>
-      <canvas id="canvas"></canvas>
-      <aside id="hud">
-        <div class="hud-item">Level: <span id="level">1</span></div>
-        <div class="hud-item">Score: <span id="score">0</span></div>
-        <div class="hud-item">Target: <div id="targetSwatch" class="swatch"></div></div>
-        <div class="hud-item">You: <div id="playerSwatch" class="swatch"></div></div>
-        <div class="hud-item">Inventory: <div id="inventory"></div></div>
-        <div class="hud-item small" id="tip">Tip: Steal colors from orbs and combine to match the target.</div>
-      </aside>
-    </main>
+        <!-- UI Overlay -->
+        <div id="ui-layer">
+            <div id="hud-top">
+                <div class="hud-stat">LEVEL <span id="level-display">1</span></div>
+                <div class="hud-stat">SCORE <span id="score-display">0</span></div>
+            </div>
 
-    <footer>
-      <small>Use arrow keys or WASD to move. Click or Space to shoot a collector. Game state saved in browser.</small>
-    </footer>
-  </div>
+            <div id="hud-bottom">
+                <div class="hud-bar-container">
+                    <div id="health-bar-fill" class="bar-fill health"></div>
+                    <span class="bar-label">HP</span>
+                </div>
+                <div class="hud-bar-container">
+                    <div id="energy-bar-fill" class="bar-fill energy"></div>
+                    <span class="bar-label">ENERGY</span>
+                </div>
+            </div>
 
-  <script src="script.js"></script>
+            <!-- Action Log -->
+            <div id="action-log"></div>
+
+            <!-- Mobile Controls -->
+            <div id="mobile-controls" class="hidden">
+                <div id="joystick-left" class="joystick-area"></div>
+                <div id="joystick-right" class="joystick-area"></div>
+            </div>
+
+            <!-- Menus -->
+            <div id="menu-overlay" class="menu visible">
+                <h1>CHROMA QUEST</h1>
+                <h2>The Void Painter</h2>
+                <button id="btn-start">START GAME</button>
+                <div class="instructions">
+                    <p>WASD / Arrows to Move</p>
+                    <p>Mouse / Tap to Shoot</p>
+                </div>
+            </div>
+
+            <div id="game-over-overlay" class="menu hidden">
+                <h1>GAME OVER</h1>
+                <p>Level Reached: <span id="final-level"></span></p>
+                <button id="btn-restart">TRY AGAIN</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>

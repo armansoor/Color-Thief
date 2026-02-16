@@ -1,29 +1,220 @@
-:root{
-  --bg:#07111a;
-  --panel: rgba(255,255,255,0.04);
-  --accent: #6fa8ff;
-  --text:#e9f2ff;
+:root {
+    --bg-color: #050505;
+    --primary-color: #00ffcc;
+    --danger-color: #ff0055;
+    --ui-bg: rgba(0, 0, 0, 0.6);
+    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-*{box-sizing:border-box}
-html,body,#root{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-body{background:linear-gradient(180deg,var(--bg),#041018);color:var(--text)}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px}
-header h1{margin:0;font-size:18px}
-#top-controls{display:flex;gap:8px;align-items:center}
-button{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#02223a;cursor:pointer;font-weight:600}
-button[disabled]{opacity:.45;cursor:default}
-.small{font-size:13px;color:#9db3d6}
-main{display:flex;gap:12px;padding:8px 18px}
-#canvas{flex:1;border-radius:12px;background:#071b26;display:block;width:100%;height:calc(100vh - 160px)}
-#hud{width:260px;background:var(--panel);padding:12px;border-radius:10px}
-.hud-item{margin-bottom:10px}
-.swatch{display:inline-block;width:36px;height:22px;border-radius:4px;border:1px solid rgba(0,0,0,0.6);vertical-align:middle;margin-left:8px}
-#inventory{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.inventory-slot{width:28px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}
-footer{padding:8px 18px;color:#9db3d6}
-#tip{background:rgba(255,255,255,0.02);padding:8px;border-radius:6px}
-@media (max-width:900px){
-  main{flex-direction:column}
-  #hud{width:100%}
-  #canvas{height:60vh}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    overflow: hidden;
+    color: white;
+    font-family: var(--font-main);
+    touch-action: none; /* Prevent browser zooming/scrolling */
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through to canvas/controls */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* HUD Top */
+#hud-top {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+.hud-stat span {
+    color: var(--primary-color);
+}
+
+/* HUD Bottom */
+#hud-bottom {
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.hud-bar-container {
+    position: relative;
+    width: 200px;
+    height: 20px;
+    background: #333;
+    border: 2px solid #555;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    width: 100%;
+    transition: width 0.2s;
+}
+
+.bar-fill.health { background: var(--danger-color); box-shadow: 0 0 10px var(--danger-color); }
+.bar-fill.energy { background: var(--primary-color); box-shadow: 0 0 10px var(--primary-color); }
+
+.bar-label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+}
+
+/* Action Log */
+#action-log {
+    position: absolute;
+    bottom: 80px;
+    left: 20px;
+    max-width: 300px;
+    height: 150px;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+    pointer-events: none;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.log-entry {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 8px;
+    margin-top: 2px;
+    border-left: 3px solid var(--primary-color);
+    animation: fadeOut 5s forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Menus */
+.menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto; /* Re-enable clicks */
+    z-index: 100;
+}
+
+.menu.hidden { display: none; }
+
+h1 {
+    font-size: 64px;
+    margin: 0;
+    color: var(--primary-color);
+    text-shadow: 0 0 20px var(--primary-color);
+    text-align: center;
+}
+
+h2 {
+    font-size: 32px;
+    color: white;
+    margin-top: 0;
+    margin-bottom: 40px;
+    opacity: 0.8;
+}
+
+button {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 15px 40px;
+    font-size: 24px;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: all 0.3s;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+}
+
+button:hover {
+    background: var(--primary-color);
+    color: black;
+    box-shadow: 0 0 30px var(--primary-color);
+}
+
+.instructions {
+    margin-top: 40px;
+    text-align: center;
+    opacity: 0.7;
+    font-size: 18px;
+}
+
+/* Mobile Controls */
+#mobile-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+}
+
+#mobile-controls.hidden { display: none; }
+
+.joystick-area {
+    position: absolute;
+    bottom: 20px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    pointer-events: auto;
+}
+
+#joystick-left { left: 20px; }
+#joystick-right { right: 20px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    h1 { font-size: 40px; }
+    h2 { font-size: 20px; }
+    #hud-top { padding: 10px; font-size: 18px; }
+    #hud-bottom { padding: 10px; flex-direction: column; align-items: flex-start; gap: 5px; }
+    .hud-bar-container { width: 150px; height: 15px; }
+    #mobile-controls { display: block; } /* Force show on mobile? logic will handle class */
 }

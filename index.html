@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chroma Quest: The Void Painter</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="minigame.css">
 </head>
 <body>
     <div id="game-container">
@@ -52,10 +53,24 @@
             <div id="game-over-overlay" class="menu hidden">
                 <h1>GAME OVER</h1>
                 <p>Level Reached: <span id="final-level"></span></p>
+                <div id="high-score-list" style="margin: 20px 0; text-align: left; font-size: 16px;">
+                    <!-- High Scores -->
+                </div>
                 <button id="btn-restart">TRY AGAIN</button>
+            </div>
+
+            <div id="minigame-overlay" class="menu hidden">
+                <h2>VOID BREACH DETECTED</h2>
+                <p class="minigame-instruction">Memorize the Target Color!</p>
+                <div id="minigame-container">
+                    <!-- Dynamic Content -->
+                </div>
+                <div id="minigame-timer" class="bar-fill" style="width: 100%; height: 10px; background: orange; margin-top: 20px;"></div>
             </div>
         </div>
     </div>
+    <script src="profile.js"></script>
+    <script src="minigame.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

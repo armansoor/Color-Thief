@@ -262,137 +262,6 @@ class Boss extends Enemy {
     }
 }
 
-// --- Input Handler ---
-class InputHandler {
-    constructor() {
-        this.keys = {};
-        this.mouse = { x: 0, y: 0, down: false };
-        this.touch = {
-            left: { active: false, x: 0, y: 0, originX: 0, originY: 0 }, // Move
-            right: { active: false, x: 0, y: 0, originX: 0, originY: 0 } // Shoot
-        };
-        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        this._initListeners();
-    }
-
-    _initListeners() {
-        // Keyboard
-        window.addEventListener('keydown', e => this.keys[e.code] = true);
-        window.addEventListener('keyup', e => this.keys[e.code] = false);
-
-        // Mouse
-        window.addEventListener('mousemove', e => {
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
-        window.addEventListener('mousedown', () => this.mouse.down = true);
-        window.addEventListener('mouseup', () => this.mouse.down = false);
-
-        // Touch
-        if (this.isMobile) {
-            document.getElementById('mobile-controls').classList.remove('hidden');
-            const leftZone = document.getElementById('joystick-left');
-            const rightZone = document.getElementById('joystick-right');
-
-            // Left Stick (Move)
-            leftZone.addEventListener('touchstart', e => {
-                e.preventDefault();
-                const touch = e.changedTouches[0];
-                this.touch.left.active = true;
-                this.touch.left.originX = touch.clientX;
-                this.touch.left.originY = touch.clientY;
-                this.touch.left.x = 0;
-                this.touch.left.y = 0;
-            });
-            leftZone.addEventListener('touchmove', e => {
-                e.preventDefault();
-                if(!this.touch.left.active) return;
-                const touch = e.changedTouches[0];
-                const dx = touch.clientX - this.touch.left.originX;
-                const dy = touch.clientY - this.touch.left.originY;
-                const maxDist = 50;
-                this.touch.left.x = Utils.clamp(dx / maxDist, -1, 1);
-                this.touch.left.y = Utils.clamp(dy / maxDist, -1, 1);
-            });
-            leftZone.addEventListener('touchend', e => {
-                e.preventDefault();
-                this.touch.left.active = false;
-                this.touch.left.x = 0;
-                this.touch.left.y = 0;
-            });
-
-            // Right Stick (Aim/Shoot)
-            rightZone.addEventListener('touchstart', e => {
-                e.preventDefault();
-                const touch = e.changedTouches[0];
-                this.touch.right.active = true;
-                this.touch.right.originX = touch.clientX;
-                this.touch.right.originY = touch.clientY;
-                this.touch.right.x = 0;
-                this.touch.right.y = 0;
-            });
-            rightZone.addEventListener('touchmove', e => {
-                 e.preventDefault();
-                if(!this.touch.right.active) return;
-                const touch = e.changedTouches[0];
-                const dx = touch.clientX - this.touch.right.originX;
-                const dy = touch.clientY - this.touch.right.originY;
-                const maxDist = 50;
-                this.touch.right.x = Utils.clamp(dx / maxDist, -1, 1);
-                this.touch.right.y = Utils.clamp(dy / maxDist, -1, 1);
-            });
-             rightZone.addEventListener('touchend', e => {
-                e.preventDefault();
-                this.touch.right.active = false;
-                this.touch.right.x = 0;
-                this.touch.right.y = 0;
-            });
-        }
-    }
-
-    getMoveVector() {
-        let x = 0, y = 0;
-        if (this.keys['KeyW'] || this.keys['ArrowUp']) y -= 1;
-        if (this.keys['KeyS'] || this.keys['ArrowDown']) y += 1;
-        if (this.keys['KeyA'] || this.keys['ArrowLeft']) x -= 1;
-        if (this.keys['KeyD'] || this.keys['ArrowRight']) x += 1;
-
-        if (this.isMobile && this.touch.left.active) {
-            x = this.touch.left.x;
-            y = this.touch.left.y;
-        }
-
-        const len = Math.hypot(x, y);
-        if (len > 1) { x /= len; y /= len; }
-        return { x, y };
-    }
-
-    getAimVector(playerX, playerY) {
-        if (this.isMobile && this.touch.right.active) {
-            // If stick is moved, aim is that direction. If just tapped, we need a direction?
-            // For now, assume stick movement defines direction.
-            // If center tap, maybe shoot straight?
-            // Let's rely on stick displacement.
-            const len = Math.hypot(this.touch.right.x, this.touch.right.y);
-            return {
-                x: this.touch.right.x,
-                y: this.touch.right.y,
-                active: len > 0.1
-            };
-        }
-
-        const dx = this.mouse.x - playerX;
-        const dy = this.mouse.y - playerY;
-        const len = Math.hypot(dx, dy);
-        return {
-            x: dx / len,
-            y: dy / len,
-            active: this.mouse.down || this.keys['Space']
-        };
-    }
-}
-
 // --- Renderer ---
 class Renderer {
     constructor() {
@@ -589,6 +458,30 @@ class Game {
         this.minigame = new Minigame(this);
         this.askName();
 
+        // Auto Fire Toggle
+        this.ui.toggleAutoFire = document.createElement('button');
+        this.ui.toggleAutoFire.id = 'btn-autofire';
+        this.ui.toggleAutoFire.innerText = 'Auto-Fire: ON'; // Default
+        this.ui.toggleAutoFire.style.position = 'absolute';
+        this.ui.toggleAutoFire.style.top = '10px';
+        this.ui.toggleAutoFire.style.right = '10px';
+        this.ui.toggleAutoFire.style.zIndex = '100';
+        this.ui.toggleAutoFire.style.fontSize = '12px';
+        this.ui.toggleAutoFire.style.padding = '5px 10px';
+        this.ui.toggleAutoFire.style.background = 'rgba(0, 0, 0, 0.5)';
+        this.ui.toggleAutoFire.style.border = '1px solid #00ffcc';
+        this.ui.toggleAutoFire.style.color = '#00ffcc';
+        this.ui.toggleAutoFire.onclick = () => {
+             this.input.toggleAutoFire();
+             this.ui.toggleAutoFire.innerText = `Auto-Fire: ${this.input.autoFire ? 'ON' : 'OFF'}`;
+             this.ui.toggleAutoFire.style.color = this.input.autoFire ? '#00ffcc' : '#555';
+        };
+        document.getElementById('game-container').appendChild(this.ui.toggleAutoFire);
+
+        // Sync initial state
+        this.input.autoFire = true; // Force default ON for easier gameplay
+        this.ui.toggleAutoFire.innerText = `Auto-Fire: ${this.input.autoFire ? 'ON' : 'OFF'}`;
+
         this.ui.startBtn.addEventListener('click', () => this.start());
         this.ui.restartBtn.addEventListener('click', () => this.start());
     }
@@ -718,19 +611,6 @@ class Game {
         // Screen Shake Timer
         if (this.shakeTimer > 0) {
             this.shakeTimer -= dt;
-            const shake = 5 * (this.shakeTimer / 0.5);
-            const dx = Math.random() * shake - shake/2;
-            const dy = Math.random() * shake - shake/2;
-            this.renderer.ctx.save();
-            this.renderer.ctx.translate(dx, dy);
-            // Note: We need to restore this in draw() or end of frame.
-            // Actually, usually shake affects camera transform.
-            // Here, I am translating context. If I don't restore, it accumulates?
-            // Wait, renderer.clear() clears pixels, but transformation matrix persists?
-            // Yes. I should handle shake in draw() strictly or wrap here.
-            // Let's move shake logic to draw().
-            this.renderer.ctx.restore(); // Undo immediately to prevent state leak logic issues
-            // I'll handle visual shake in draw() only.
         }
 
         // --- Particles & Texts ---
@@ -743,12 +623,12 @@ class Game {
             if(!this.floatingTexts[i].active) this.floatingTexts.splice(i, 1);
         }
 
-        // --- Player Movement ---
+        // --- Player Movement (Snappy) ---
         const move = this.input.getMoveVector();
-        this.player.vx += move.x * CONFIG.PLAYER_SPEED * 10 * dt;
-        this.player.vy += move.y * CONFIG.PLAYER_SPEED * 10 * dt;
-        this.player.vx *= CONFIG.FRICTION;
-        this.player.vy *= CONFIG.FRICTION;
+        // Direct Velocity Set - No Acceleration/Friction
+        this.player.vx = move.x * CONFIG.PLAYER_SPEED;
+        this.player.vy = move.y * CONFIG.PLAYER_SPEED;
+
         this.player.x += this.player.vx * dt;
         this.player.y += this.player.vy * dt;
 
@@ -762,8 +642,24 @@ class Game {
         if (this.player.y > h - r) { this.player.y = h - r; this.player.vy *= -0.5; }
 
         // --- Shooting ---
+        // Find nearest enemy for auto-aim
+        let nearest = null;
+        let minDist = Infinity;
+        for(const e of this.enemies) {
+            const d = Utils.dist(this.player.x, this.player.y, e.x, e.y);
+            if (d < minDist && d < 600) { // Range limit
+                minDist = d;
+                nearest = e;
+            }
+        }
+
         this.player.shootTimer -= dt;
-        const aim = this.input.getAimVector(this.player.x, this.player.y);
+        const aim = this.input.getAimVector(this.player.x, this.player.y, nearest);
+
+        // Only shoot if aiming actively or auto-firing at a valid target
+        // If auto-fire is ON but no enemy, aim.active is false (unless mouse/touch)
+        // Wait, my input logic returns active=true if autofire && nearest.
+
         if (aim.active && this.player.shootTimer <= 0) {
             this.projectiles.push(new Projectile(
                 this.player.x + aim.x * 20,
@@ -942,7 +838,19 @@ class Game {
 
         if (this.state === 'PLAYING') {
             // Determine Aim Angle for Player
-            const aim = this.input.getAimVector(this.player.x, this.player.y);
+            // We need to re-calculate 'nearest' for drawing? Or just use last known aim?
+            // Ideally we pass it in, but for drawing it's okay to recalculate or just use mouse if no target.
+            // Actually, let's just use mouse/movement direction if not shooting?
+            // Let's re-run getAimVector logic for visuals
+
+            let nearest = null;
+            let minDist = Infinity;
+            for(const e of this.enemies) {
+                const d = Utils.dist(this.player.x, this.player.y, e.x, e.y);
+                if (d < minDist && d < 600) { minDist = d; nearest = e; }
+            }
+
+            const aim = this.input.getAimVector(this.player.x, this.player.y, nearest);
             const angle = Math.atan2(aim.y, aim.x);
 
             this.renderer.drawSplat(this.player.x, this.player.y, this.player.color, 2); // Player trail
@@ -951,11 +859,36 @@ class Game {
             this.renderer.drawPlayer(this.player, angle);
             this.renderer.drawParticles(this.particles);
             this.renderer.drawFloatingTexts(this.floatingTexts);
+
+            // Draw Joysticks (Visual Feedback)
+            if (this.input.touch.left.active) {
+                this._drawJoystick(this.input.touch.left);
+            }
+            if (this.input.touch.right.active) {
+                this._drawJoystick(this.input.touch.right);
+            }
         }
 
         if (this.shakeTimer > 0) {
             this.renderer.ctx.restore();
         }
+    }
+
+    _drawJoystick(touch) {
+        this.renderer.ctx.save();
+        this.renderer.ctx.globalAlpha = 0.5;
+        // Base
+        this.renderer.ctx.beginPath();
+        this.renderer.ctx.arc(touch.originX, touch.originY, 50, 0, Math.PI * 2);
+        this.renderer.ctx.strokeStyle = 'white';
+        this.renderer.ctx.lineWidth = 2;
+        this.renderer.ctx.stroke();
+        // Stick
+        this.renderer.ctx.beginPath();
+        this.renderer.ctx.arc(touch.currentX, touch.currentY, 20, 0, Math.PI * 2);
+        this.renderer.ctx.fillStyle = 'white';
+        this.renderer.ctx.fill();
+        this.renderer.ctx.restore();
     }
 
     loop(timestamp) {

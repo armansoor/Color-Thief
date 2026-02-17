@@ -46,11 +46,14 @@ class InputHandler {
         // visual feedback handled by Game class checking this property
     }
 
+    _shouldIgnoreTouch(e) {
+        const target = e.target;
+        // Ignore if touching a button or menu element
+        return target.closest('button') || target.closest('.menu') || target.closest('a') || target.closest('input');
+    }
+
     _handleTouchStart(e) {
-        // If touching a UI element (button), let the browser handle it
-        if (e.target.tagName === 'BUTTON' || e.target.closest('.menu')) {
-            return;
-        }
+        if (this._shouldIgnoreTouch(e)) return;
 
         e.preventDefault();
         for (let i = 0; i < e.changedTouches.length; i++) {
@@ -58,7 +61,7 @@ class InputHandler {
             const halfWidth = window.innerWidth / 2;
 
             if (t.clientX < halfWidth) {
-                // Left Stick (Movement) - Only if not already active
+                // Left Stick (Movement)
                 if (!this.touch.left.active) {
                     this.touch.left.active = true;
                     this.touch.left.id = t.identifier;
@@ -70,7 +73,7 @@ class InputHandler {
                     this.touch.left.vecY = 0;
                 }
             } else {
-                // Right Stick (Aiming) - Only if not already active
+                // Right Stick (Aiming)
                 if (!this.touch.right.active) {
                     this.touch.right.active = true;
                     this.touch.right.id = t.identifier;
@@ -86,6 +89,8 @@ class InputHandler {
     }
 
     _handleTouchMove(e) {
+        if (this._shouldIgnoreTouch(e)) return;
+
         e.preventDefault();
         for (let i = 0; i < e.changedTouches.length; i++) {
             const t = e.changedTouches[i];
@@ -99,6 +104,10 @@ class InputHandler {
     }
 
     _handleTouchEnd(e) {
+        // Important: We must allow the browser to process clicks on UI elements.
+        // If we preventDefault on touchend, click never fires.
+        if (this._shouldIgnoreTouch(e)) return;
+
         e.preventDefault();
         for (let i = 0; i < e.changedTouches.length; i++) {
             const t = e.changedTouches[i];
@@ -121,10 +130,9 @@ class InputHandler {
 
         const dx = x - stick.originX;
         const dy = y - stick.originY;
-        const maxDist = 50; // Radius of joystick movement
+        const maxDist = 50;
         const dist = Math.hypot(dx, dy);
 
-        // Clamped vector (-1 to 1)
         if (dist > maxDist) {
             stick.vecX = (dx / dist);
             stick.vecY = (dy / dist);
@@ -135,7 +143,6 @@ class InputHandler {
     }
 
     getMoveVector() {
-        // Priority: Touch > Keyboard
         if (this.touch.left.active) {
             return { x: this.touch.left.vecX, y: this.touch.left.vecY };
         }
@@ -146,12 +153,8 @@ class InputHandler {
         if (this.keys['KeyA'] || this.keys['ArrowLeft']) x -= 1;
         if (this.keys['KeyD'] || this.keys['ArrowRight']) x += 1;
 
-        // Normalize keyboard input for consistent speed
         const len = Math.hypot(x, y);
-        if (len > 0) {
-            x /= len;
-            y /= len;
-        }
+        if (len > 0) { x /= len; y /= len; }
         return { x, y };
     }
 
@@ -162,11 +165,11 @@ class InputHandler {
             return {
                 x: this.touch.right.vecX,
                 y: this.touch.right.vecY,
-                active: len > 0.2 // Deadzone
+                active: len > 0.2
             };
         }
 
-        // 2. Mouse Aim (If clicking)
+        // 2. Mouse Aim
         if (this.mouse.down || this.keys['Space']) {
              const dx = this.mouse.x - playerX;
              const dy = this.mouse.y - playerY;
@@ -178,7 +181,7 @@ class InputHandler {
              };
         }
 
-        // 3. Auto-Fire (Aim at nearest enemy)
+        // 3. Auto-Fire
         if (this.autoFire && nearestEnemy) {
             const dx = nearestEnemy.x - playerX;
             const dy = nearestEnemy.y - playerY;
@@ -190,7 +193,7 @@ class InputHandler {
              };
         }
 
-        // 4. Fallback (Mouse Position but not shooting)
+        // 4. Fallback
         const dx = this.mouse.x - playerX;
         const dy = this.mouse.y - playerY;
         const len = Math.hypot(dx, dy);

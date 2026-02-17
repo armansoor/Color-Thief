@@ -47,6 +47,11 @@ class InputHandler {
     }
 
     _handleTouchStart(e) {
+        // If touching a UI element (button), let the browser handle it
+        if (e.target.tagName === 'BUTTON' || e.target.closest('.menu')) {
+            return;
+        }
+
         e.preventDefault();
         for (let i = 0; i < e.changedTouches.length; i++) {
             const t = e.changedTouches[i];

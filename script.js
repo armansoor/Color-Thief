@@ -456,6 +456,12 @@ class Game {
 
         this.profile = new PlayerProfile();
         this.minigame = new Minigame(this);
+        // this.askName(); // Disabled prompt for now to reduce startup friction?
+        // Or keep it but make it non-blocking.
+        // Let's keep it but ensure InputHandler is ready.
+
+        // Ensure InputHandler is attached to DOM correctly
+        // The game loop starts inside askName -> requestAnimationFrame
         this.askName();
 
         // Auto Fire Toggle
